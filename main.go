@@ -17,7 +17,7 @@ var (
 func init() {
 	flag.StringVar(&DataDir, "data", DataDir, "directory to save photos")
 	flag.StringVar(&ImageURLPrefix, "domain", ImageURLPrefix, "photos storage domain name")
-	flag.StringVar(&listen, "listen", ImageURLPrefix, "bind [<host>]:<port>")
+	flag.StringVar(&listen, "listen", listen, "bind [<host>]:<port>")
 	flag.Parse()
 	if !strings.HasPrefix(ImageURLPrefix, "http") {
 		ImageURLPrefix = "http://" + ImageURLPrefix
