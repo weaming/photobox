@@ -3,15 +3,23 @@ package main
 import (
 	"flag"
 	"path"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
 
-var DataDir = "photos"
+var (
+	DataDir        = "photos"
+	ImageURLPrefix = "http://photobox.bitsflow.org"
+)
 
 func init() {
 	flag.StringVar(&DataDir, "data", DataDir, "directory to save photos")
+	flag.StringVar(&ImageURLPrefix, "host", ImageURLPrefix, "photos storage host name")
 	flag.Parse()
+	if !strings.HasPrefix(ImageURLPrefix, "http") {
+		ImageURLPrefix = "http://" + ImageURLPrefix
+	}
 }
 
 func main() {

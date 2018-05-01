@@ -14,13 +14,9 @@ import (
 	"github.com/weaming/photobox/imageupload"
 )
 
-var (
-	ImageURLPrefix = "http://photobox.bitsflow.org"
-)
-
 type UploadResponse struct {
-	Image *imageupload.Image `json:"data"`
-	PU    PathUrl            `json:"url"`
+	Image *imageupload.Image `json:"image"`
+	PU    *PathUrl           `json:"data"`
 }
 
 func Upload(c *gin.Context) {
@@ -41,7 +37,7 @@ func Upload(c *gin.Context) {
 	panicErr(libfs.CreateDirIfNotExist(path.Dir(fp), false))
 	panicErr(t.Save(fp))
 
-	c.JSON(http.StatusOK, UploadResponse{img, pu})
+	c.JSON(http.StatusOK, UploadResponse{img, &pu})
 }
 
 func CommonThumb(img *imageupload.Image, width, height, quality int) (*imageupload.Image, error) {
@@ -68,9 +64,9 @@ func panicErr(err error) {
 }
 
 type PathUrl struct {
-	OriginPath string `json:"origin_path"`
+	OriginPath string `json:"path"`
 	ThumbPath  string `json:"thumb_path"`
-	OriginURL  string `json:"origin_url"`
+	OriginURL  string `json:"url"`
 	ThumbURL   string `json:"thumb_url"`
 }
 
