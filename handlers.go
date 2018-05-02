@@ -28,6 +28,17 @@ func Upload(c *gin.Context) {
 		return
 	}
 
+	// check cache
+	cacheRes := UploadResponse{}
+	err = CacheGet(img.Sha256, &cacheRes)
+	if err == nil {
+		if libfs.Exist(cacheRes.Image.Path) && libfs.Exist(cacheRes.Thumb.Path) {
+			log.Printf("hit cache %v", img.Sha256)
+			c.JSON(http.StatusOK, cacheRes)
+			return
+		}
+	}
+
 	width, height, quality := getThumbParams(c)
 	t, err := imageupload.Thumbnail(img, width, height, quality)
 	if err != nil {
@@ -49,7 +60,10 @@ func Upload(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, UploadResponse{img, t, &pu})
+	// cache and return
+	res := UploadResponse{img, t, &pu}
+	CacheSet(img.Sha256, &res)
+	c.JSON(http.StatusOK, res)
 }
 
 func saveImg(fp string, img *imageupload.Image, c *gin.Context) error {

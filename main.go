@@ -9,15 +9,19 @@ import (
 )
 
 var (
-	DataDir     = "photos"
-	ImageDomain = "http://photobox.bitsflow.org"
-	listen      = ":5000"
+	DataDir       = "photos"
+	ImageDomain   = "http://photobox.bitsflow.org"
+	listen        = ":5000"
+	redisHostPort = "127.0.0.1:6379"
+	redisDB       = 8
 )
 
 func init() {
 	flag.StringVar(&DataDir, "data", DataDir, "directory to save photos")
 	flag.StringVar(&ImageDomain, "domain", ImageDomain, "photos storage domain name")
 	flag.StringVar(&listen, "listen", listen, "bind [<host>]:<port>")
+	flag.StringVar(&redisHostPort, "redis", redisHostPort, "redis <host>:<port>")
+	flag.IntVar(&redisDB, "db", redisDB, "redis database")
 	flag.Parse()
 	if !strings.HasPrefix(ImageDomain, "http") {
 		ImageDomain = "http://" + ImageDomain

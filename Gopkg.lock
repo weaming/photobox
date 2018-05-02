@@ -18,6 +18,31 @@
   version = "v1.2"
 
 [[projects]]
+  name = "github.com/go-redis/cache"
+  packages = [
+    ".",
+    "internal/lrucache",
+    "internal/singleflight"
+  ]
+  revision = "c58ada1e23a3b66593f81c70572c20a0bb805a90"
+  version = "v6.3.5"
+
+[[projects]]
+  name = "github.com/go-redis/redis"
+  packages = [
+    ".",
+    "internal",
+    "internal/consistenthash",
+    "internal/hashtag",
+    "internal/pool",
+    "internal/proto",
+    "internal/singleflight",
+    "internal/util"
+  ]
+  revision = "877867d2845fbaf86798befe410b6ceb6f5c29a3"
+  version = "v6.10.2"
+
+[[projects]]
   name = "github.com/golang/protobuf"
   packages = ["proto"]
   revision = "b4deda0973fb4c70b50d226b1af49f3da59f5265"
@@ -42,19 +67,50 @@
   version = "v1.1.1"
 
 [[projects]]
+  name = "github.com/vmihailenco/msgpack"
+  packages = [
+    ".",
+    "codes"
+  ]
+  revision = "a053f3dac71df214bfe8b367f34220f0029c9c02"
+  version = "v3.3.1"
+
+[[projects]]
   branch = "master"
   name = "github.com/weaming/golib"
   packages = [
     "fs",
     "utils"
   ]
-  revision = "3b872f1f2f74faece5d8b4743500dae15b33d38c"
+  revision = "68c98dd76a16a0ef2bf345717f2c1ef32e3f97e2"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/net"
+  packages = ["context"]
+  revision = "5f9ae10d9af5b1c89ae6904293b14b064d4ada23"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
   revision = "78d5f264b493f125018180c204871ecf58a2dce1"
+
+[[projects]]
+  name = "google.golang.org/appengine"
+  packages = [
+    ".",
+    "datastore",
+    "internal",
+    "internal/app_identity",
+    "internal/base",
+    "internal/datastore",
+    "internal/log",
+    "internal/modules",
+    "internal/remote_api"
+  ]
+  revision = "150dc57a1b433e64154302bdc40b6bb8aefa313a"
+  version = "v1.0.0"
 
 [[projects]]
   name = "gopkg.in/go-playground/validator.v8"
@@ -71,6 +127,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "ba3452b7c5eca00d088130b9cafc7d31516bb7e261c9f1827f2e45edce112134"
+  inputs-digest = "30900ebfbb4fbb3fffcf9091aab32d40958677197dfd8b9c4ae53fb21f156c84"
   solver-name = "gps-cdcl"
   solver-version = 1

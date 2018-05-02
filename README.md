@@ -11,6 +11,7 @@ Photo Box
 - Generate thumbnail image with size your desire
 - JSON response format
 - Custom `index.html` homepage
+- Redis cached upload result based on photo hash
 
 ## API
 

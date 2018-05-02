@@ -14,13 +14,9 @@ import (
 	"path"
 	"path/filepath"
 	"strconv"
-	"sync"
 )
 
 const thumbTempName = "thumbnail.jpg"
-
-var hashPathMap = map[string]*Image{}
-var mapLock = sync.Mutex{}
 
 type Image struct {
 	Filename    string `json:"filename"`
@@ -30,7 +26,7 @@ type Image struct {
 	Width       int    `json:"width"`
 	Height      int    `json:"height"`
 	Data        []byte `json:"-"`
-	Path        string `json:"-"`
+	Path        string `json:"file"`
 	Sha256      string `json:"sha256"`
 }
 
