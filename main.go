@@ -9,11 +9,14 @@ import (
 )
 
 var (
-	DataDir       = "photos"
-	ImageDomain   = "http://photobox.bitsflow.org"
-	listen        = ":5000"
-	redisHostPort = "127.0.0.1:6379"
-	redisDB       = 8
+	DataDir          = "photos"
+	ImageDomain      = "http://photobox.bitsflow.org"
+	listen           = ":5000"
+	redisHostPort    = "127.0.0.1:6379"
+	redisDB          = 8
+	defaultMaxWidth  = 1280
+	defaultMaxHeight = 1280
+	defaultQuality   = 80
 )
 
 func init() {

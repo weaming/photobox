@@ -127,9 +127,9 @@ func UrlJoin(base, uri string) string {
 }
 
 func getThumbParams(c *gin.Context) (int, int, int) {
-	width := 300
-	height := 300
-	quality := 80
+	width := defaultMaxWidth
+	height := defaultMaxHeight
+	quality := defaultQuality
 	if str, ok := c.GetQuery("width"); ok {
 		if v, e := strconv.Atoi(str); e == nil {
 			width = v
