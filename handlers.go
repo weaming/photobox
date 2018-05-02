@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+	"net/url"
 	"path"
 	"strconv"
 	"time"
@@ -93,9 +95,21 @@ func generateFilePath() PathUrl {
 	o, t := path.Join("origin", suffix), path.Join("thumb", suffix)
 	return PathUrl{
 		o, t,
-		path.Join(ImageURLPrefix, o),
-		path.Join(ImageURLPrefix, t),
+		UrlJoin(ImageDomain, o),
+		UrlJoin(ImageDomain, t),
 	}
+}
+
+func UrlJoin(base, uri string) string {
+	u, err := url.Parse(uri)
+	if err != nil {
+		log.Fatal(err)
+	}
+	b, err := url.Parse(base)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return b.ResolveReference(u).String()
 }
 
 func getThumbParams(c *gin.Context) (int, int, int) {

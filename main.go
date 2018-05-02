@@ -9,18 +9,18 @@ import (
 )
 
 var (
-	DataDir        = "photos"
-	ImageURLPrefix = "http://photobox.bitsflow.org"
-	listen         = ":5000"
+	DataDir     = "photos"
+	ImageDomain = "http://photobox.bitsflow.org"
+	listen      = ":5000"
 )
 
 func init() {
 	flag.StringVar(&DataDir, "data", DataDir, "directory to save photos")
-	flag.StringVar(&ImageURLPrefix, "domain", ImageURLPrefix, "photos storage domain name")
+	flag.StringVar(&ImageDomain, "domain", ImageDomain, "photos storage domain name")
 	flag.StringVar(&listen, "listen", listen, "bind [<host>]:<port>")
 	flag.Parse()
-	if !strings.HasPrefix(ImageURLPrefix, "http") {
-		ImageURLPrefix = "http://" + ImageURLPrefix
+	if !strings.HasPrefix(ImageDomain, "http") {
+		ImageDomain = "http://" + ImageDomain
 	}
 }
 
