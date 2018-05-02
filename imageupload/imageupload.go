@@ -31,11 +31,11 @@ type Image struct {
 }
 
 // Save image to file.
-func (i *Image) Save(filename string) (*Image, error) {
+func (i *Image) Save(filename string) error {
 	absPath, err := filepath.Abs(filename)
 	i.Path = absPath
 	if err != nil {
-		return i, err
+		return err
 	}
 
 	err = ioutil.WriteFile(filename, i.Data, 0644)
@@ -44,10 +44,9 @@ func (i *Image) Save(filename string) (*Image, error) {
 		if i.Filename == thumbTempName {
 			i.Filename = path.Base(filename)
 		}
-
 	}
 
-	return i, err
+	return err
 }
 
 // Convert image to base64 data uri.

@@ -1,25 +1,16 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
-	"net/url"
 	"path"
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	libfs "github.com/weaming/golib/fs"
-	"github.com/weaming/golib/utils"
 	"github.com/weaming/photobox/imageupload"
+	"github.com/weaming/photobox/storage"
 )
-
-type UploadResponse struct {
-	Image *imageupload.Image `json:"image"`
-	Thumb *imageupload.Image `json:"thumb"`
-	PU    *PathUrl           `json:"data"`
-}
 
 func Upload(c *gin.Context) {
 	img, err := imageupload.Process(c.Request, "file")
@@ -49,14 +40,16 @@ func Upload(c *gin.Context) {
 	pu := generateFilePath()
 
 	fp := path.Join(DataDir, pu.OriginPath)
-	err = saveImg(fp, img, c)
+	err = saveImage(fp, img)
 	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	fp = path.Join(DataDir, pu.ThumbPath)
-	err = saveImg(fp, t, c)
+	err = saveImage(fp, t)
 	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -66,64 +59,21 @@ func Upload(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
-func saveImg(fp string, img *imageupload.Image, c *gin.Context) error {
-	err := libfs.CreateDirIfNotExist(path.Dir(fp), false)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return err
-	}
-
-	img, err = img.Save(fp)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return err
-	}
-	return nil
+func saveImage(fp string, img *imageupload.Image) error {
+	local := storage.LocalStorage{Img: img}
+	return storage.SaveTo(&local, fp)
 }
 
 func Thumbnail(c *gin.Context) {
 	img, err := imageupload.Process(c.Request, "file")
-	panicErr(err)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
 	width, height, quality := getThumbParams(c)
 	t, err := imageupload.Thumbnail(img, width, height, quality)
 	t.Write(c.Writer)
-}
-
-func panicErr(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
-
-type PathUrl struct {
-	OriginPath string `json:"path"`
-	ThumbPath  string `json:"thumb_path"`
-	OriginURL  string `json:"url"`
-	ThumbURL   string `json:"thumb_url"`
-}
-
-func generateFilePath() PathUrl {
-	now := time.Now()
-	suffix := path.Join(utils.FormatDateTime("%Y/%m/%d", now), fmt.Sprintf("%d.png", now.Unix()))
-	o, t := path.Join("origin", suffix), path.Join("thumb", suffix)
-	return PathUrl{
-		o, t,
-		UrlJoin(ImageDomain, o),
-		UrlJoin(ImageDomain, t),
-	}
-}
-
-func UrlJoin(base, uri string) string {
-	u, err := url.Parse(uri)
-	if err != nil {
-		log.Fatal(err)
-	}
-	b, err := url.Parse(base)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return b.ResolveReference(u).String()
 }
 
 func getThumbParams(c *gin.Context) (int, int, int) {
