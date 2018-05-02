@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"path"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -16,36 +15,54 @@ import (
 
 type UploadResponse struct {
 	Image *imageupload.Image `json:"image"`
+	Thumb *imageupload.Image `json:"thumb"`
 	PU    *PathUrl           `json:"data"`
 }
 
 func Upload(c *gin.Context) {
 	img, err := imageupload.Process(c.Request, "file")
-	panicErr(err)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
 	width, height, quality := getThumbParams(c)
-	t, err := CommonThumb(img, width, height, quality)
-	panicErr(err)
+	t, err := imageupload.Thumbnail(img, width, height, quality)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
 	pu := generateFilePath()
 
 	fp := path.Join(DataDir, pu.OriginPath)
-	panicErr(libfs.CreateDirIfNotExist(path.Dir(fp), false))
-	panicErr(img.Save(fp))
+	err = saveImg(fp, img, c)
+	if err != nil {
+		return
+	}
 
 	fp = path.Join(DataDir, pu.ThumbPath)
-	panicErr(libfs.CreateDirIfNotExist(path.Dir(fp), false))
-	panicErr(t.Save(fp))
+	err = saveImg(fp, t, c)
+	if err != nil {
+		return
+	}
 
-	c.JSON(http.StatusOK, UploadResponse{img, &pu})
+	c.JSON(http.StatusOK, UploadResponse{img, t, &pu})
 }
 
-func CommonThumb(img *imageupload.Image, width, height, quality int) (*imageupload.Image, error) {
-	if strings.HasSuffix(strings.ToLower(img.Filename), ".png") {
-		return imageupload.ThumbnailPNG(img, width, height)
-	} else {
-		return imageupload.ThumbnailJPEG(img, width, height, quality)
+func saveImg(fp string, img *imageupload.Image, c *gin.Context) error {
+	err := libfs.CreateDirIfNotExist(path.Dir(fp), false)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return err
 	}
+
+	err = img.Save(fp)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return err
+	}
+	return nil
 }
 
 func Thumbnail(c *gin.Context) {
@@ -53,7 +70,7 @@ func Thumbnail(c *gin.Context) {
 	panicErr(err)
 
 	width, height, quality := getThumbParams(c)
-	t, err := CommonThumb(img, width, height, quality)
+	t, err := imageupload.Thumbnail(img, width, height, quality)
 	t.Write(c.Writer)
 }
 

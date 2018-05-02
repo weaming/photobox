@@ -1,7 +1,6 @@
 package fs
 
 import (
-	"errors"
 	"os"
 	"path/filepath"
 )
@@ -27,8 +26,6 @@ func CreateDirIfNotExist(dir string, force bool) error {
 			if err := os.Remove(dir); err != nil {
 				return err
 			}
-		} else {
-			return errors.New("exist " + dir)
 		}
 	}
 	return nil

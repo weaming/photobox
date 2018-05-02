@@ -11,21 +11,32 @@ import (
 	"image/png"
 	"io/ioutil"
 	"net/http"
+	"path"
 	"strconv"
+	"strings"
 
 	"github.com/nfnt/resize"
 )
 
+const thumbTempName = "thumbnail.jpg"
+
 type Image struct {
 	Filename    string `json:"filename"`
 	ContentType string `json:"content-type"`
+	Format      string `json:"format"`
 	Size        int    `json:"size"`
+	Width       int    `json:"width"`
+	Height      int    `json:"height"`
 	Data        []byte `json:"-"`
 }
 
 // Save image to file.
 func (i *Image) Save(filename string) error {
-	return ioutil.WriteFile(filename, i.Data, 0644)
+	err := ioutil.WriteFile(filename, i.Data, 0644)
+	if err == nil && i.Filename == thumbTempName {
+		i.Filename = path.Base(filename)
+	}
+	return err
 }
 
 // Convert image to base64 data uri.
@@ -79,7 +90,7 @@ func Process(r *http.Request, field string) (*Image, error) {
 		return nil, err
 	}
 
-	_, _, err = image.Decode(bytes.NewReader(bs))
+	img, format, err := image.Decode(bytes.NewReader(bs))
 
 	if err != nil {
 		return nil, err
@@ -88,8 +99,11 @@ func Process(r *http.Request, field string) (*Image, error) {
 	i := &Image{
 		Filename:    info.Filename,
 		ContentType: contentType,
+		Format:      format,
 		Data:        bs,
 		Size:        len(bs),
+		Width:       img.Bounds().Max.X,
+		Height:      img.Bounds().Max.Y,
 	}
 
 	return i, nil
@@ -97,7 +111,7 @@ func Process(r *http.Request, field string) (*Image, error) {
 
 // Create JPEG thumbnail.
 func ThumbnailJPEG(i *Image, width int, height int, quality int) (*Image, error) {
-	img, _, err := image.Decode(bytes.NewReader(i.Data))
+	img, format, err := image.Decode(bytes.NewReader(i.Data))
 
 	thumbnail := resize.Thumbnail(uint(width), uint(height), img, resize.Lanczos3)
 
@@ -113,10 +127,13 @@ func ThumbnailJPEG(i *Image, width int, height int, quality int) (*Image, error)
 	bs := data.Bytes()
 
 	t := &Image{
-		Filename:    "thumbnail.jpg",
+		Filename:    thumbTempName,
 		ContentType: "image/jpeg",
+		Format:      format,
 		Data:        bs,
 		Size:        len(bs),
+		Width:       thumbnail.Bounds().Max.X,
+		Height:      thumbnail.Bounds().Max.Y,
 	}
 
 	return t, nil
@@ -124,7 +141,7 @@ func ThumbnailJPEG(i *Image, width int, height int, quality int) (*Image, error)
 
 // Create PNG thumbnail.
 func ThumbnailPNG(i *Image, width int, height int) (*Image, error) {
-	img, _, err := image.Decode(bytes.NewReader(i.Data))
+	img, format, err := image.Decode(bytes.NewReader(i.Data))
 
 	thumbnail := resize.Thumbnail(uint(width), uint(height), img, resize.Lanczos3)
 
@@ -138,11 +155,22 @@ func ThumbnailPNG(i *Image, width int, height int) (*Image, error) {
 	bs := data.Bytes()
 
 	t := &Image{
-		Filename:    "thumbnail.png",
+		Filename:    thumbTempName,
 		ContentType: "image/png",
+		Format:      format,
 		Data:        bs,
 		Size:        len(bs),
+		Width:       thumbnail.Bounds().Max.X,
+		Height:      thumbnail.Bounds().Max.Y,
 	}
 
 	return t, nil
+}
+
+func Thumbnail(img *Image, width, height, quality int) (*Image, error) {
+	if strings.HasSuffix(strings.ToLower(img.Filename), ".png") {
+		return ThumbnailPNG(img, width, height)
+	} else {
+		return ThumbnailJPEG(img, width, height, quality)
+	}
 }
