@@ -24,9 +24,12 @@ type PathUrl struct {
 	ThumbURL   string `json:"thumb_url"`
 }
 
-func generateFilePath(hash string) PathUrl {
+func generateFilePath(hash, format string) PathUrl {
 	now := time.Now()
-	suffix := path.Join(utils.FormatDateTime("%Y/%m/%d", now), fmt.Sprintf("%d_%v.png", now.Unix(), hash[0:10]))
+	if format == "jpeg" {
+		format = "jpg"
+	}
+	suffix := path.Join(utils.FormatDateTime("%Y/%m/%d", now), fmt.Sprintf("%d_%v.%v", now.Unix(), hash[0:10], format))
 	o, t := path.Join("origin", suffix), path.Join("thumb", suffix)
 	return PathUrl{
 		o, t,

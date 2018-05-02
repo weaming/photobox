@@ -37,7 +37,7 @@ func Upload(c *gin.Context) {
 		return
 	}
 
-	pu := generateFilePath(img.Sha256)
+	pu := generateFilePath(img.Sha256, img.Format)
 
 	fp := path.Join(DataDir, pu.OriginPath)
 	err = saveImage(fp, img)
