@@ -2,23 +2,25 @@ package imageupload
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"encoding/base64"
 	"errors"
 	"fmt"
 	"image"
 	_ "image/gif"
-	"image/jpeg"
-	"image/png"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"path"
+	"path/filepath"
 	"strconv"
-	"strings"
-
-	"github.com/nfnt/resize"
+	"sync"
 )
 
 const thumbTempName = "thumbnail.jpg"
+
+var hashPathMap = map[string]*Image{}
+var mapLock = sync.Mutex{}
 
 type Image struct {
 	Filename    string `json:"filename"`
@@ -28,15 +30,39 @@ type Image struct {
 	Width       int    `json:"width"`
 	Height      int    `json:"height"`
 	Data        []byte `json:"-"`
+	Path        string `json:"-"`
+	Sha256      string `json:"sha256"`
 }
 
 // Save image to file.
-func (i *Image) Save(filename string) error {
+func (i *Image) Save(filename string) (*Image, error) {
+	i.Path, _ = filepath.Abs(filename)
+
+	/*
+			if old, ok := hashPathMap[hash]; ok {
+				// load old data
+				if ExistFile(old.Path) {
+					dat, err := ioutil.ReadFile(old.Path)
+					if err != nil {
+						goto SAVE
+					}
+					old.Data = dat
+					return old, nil
+				}
+			}
+
+		SAVE:
+	*/
 	err := ioutil.WriteFile(filename, i.Data, 0644)
-	if err == nil && i.Filename == thumbTempName {
-		i.Filename = path.Base(filename)
+	if err == nil {
+		// update the temp name
+		if i.Filename == thumbTempName {
+			i.Filename = path.Base(filename)
+		}
+
 	}
-	return err
+
+	return i, err
 }
 
 // Convert image to base64 data uri.
@@ -104,73 +130,19 @@ func Process(r *http.Request, field string) (*Image, error) {
 		Size:        len(bs),
 		Width:       img.Bounds().Max.X,
 		Height:      img.Bounds().Max.Y,
+		Sha256:      Sha256(bs),
 	}
 
 	return i, nil
 }
 
-// Create JPEG thumbnail.
-func ThumbnailJPEG(i *Image, width int, height int, quality int) (*Image, error) {
-	img, format, err := image.Decode(bytes.NewReader(i.Data))
-
-	thumbnail := resize.Thumbnail(uint(width), uint(height), img, resize.Lanczos3)
-
-	data := new(bytes.Buffer)
-	err = jpeg.Encode(data, thumbnail, &jpeg.Options{
-		Quality: quality,
-	})
-
-	if err != nil {
-		return nil, err
+func ExistFile(fp string) bool {
+	if _, err := os.Stat(fp); err == nil {
+		return true
 	}
-
-	bs := data.Bytes()
-
-	t := &Image{
-		Filename:    thumbTempName,
-		ContentType: "image/jpeg",
-		Format:      format,
-		Data:        bs,
-		Size:        len(bs),
-		Width:       thumbnail.Bounds().Max.X,
-		Height:      thumbnail.Bounds().Max.Y,
-	}
-
-	return t, nil
+	return false
 }
 
-// Create PNG thumbnail.
-func ThumbnailPNG(i *Image, width int, height int) (*Image, error) {
-	img, format, err := image.Decode(bytes.NewReader(i.Data))
-
-	thumbnail := resize.Thumbnail(uint(width), uint(height), img, resize.Lanczos3)
-
-	data := new(bytes.Buffer)
-	err = png.Encode(data, thumbnail)
-
-	if err != nil {
-		return nil, err
-	}
-
-	bs := data.Bytes()
-
-	t := &Image{
-		Filename:    thumbTempName,
-		ContentType: "image/png",
-		Format:      format,
-		Data:        bs,
-		Size:        len(bs),
-		Width:       thumbnail.Bounds().Max.X,
-		Height:      thumbnail.Bounds().Max.Y,
-	}
-
-	return t, nil
-}
-
-func Thumbnail(img *Image, width, height, quality int) (*Image, error) {
-	if strings.HasSuffix(strings.ToLower(img.Filename), ".png") {
-		return ThumbnailPNG(img, width, height)
-	} else {
-		return ThumbnailJPEG(img, width, height, quality)
-	}
+func Sha256(content []byte) string {
+	return fmt.Sprintf("%x", sha256.Sum256(content))
 }

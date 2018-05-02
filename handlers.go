@@ -59,7 +59,7 @@ func saveImg(fp string, img *imageupload.Image, c *gin.Context) error {
 		return err
 	}
 
-	err = img.Save(fp)
+	img, err = img.Save(fp)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return err
