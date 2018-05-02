@@ -36,24 +36,13 @@ type Image struct {
 
 // Save image to file.
 func (i *Image) Save(filename string) (*Image, error) {
-	i.Path, _ = filepath.Abs(filename)
+	absPath, err := filepath.Abs(filename)
+	i.Path = absPath
+	if err != nil {
+		return i, err
+	}
 
-	/*
-			if old, ok := hashPathMap[hash]; ok {
-				// load old data
-				if ExistFile(old.Path) {
-					dat, err := ioutil.ReadFile(old.Path)
-					if err != nil {
-						goto SAVE
-					}
-					old.Data = dat
-					return old, nil
-				}
-			}
-
-		SAVE:
-	*/
-	err := ioutil.WriteFile(filename, i.Data, 0644)
+	err = ioutil.WriteFile(filename, i.Data, 0644)
 	if err == nil {
 		// update the temp name
 		if i.Filename == thumbTempName {

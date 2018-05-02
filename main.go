@@ -33,6 +33,10 @@ func main() {
 		c.File("index.html")
 	})
 
+	r.NoRoute(func(c *gin.Context) {
+		c.JSON(404, gin.H{"success": false, "message": "resource not found"})
+	})
+
 	r.POST("/upload", Upload)
 	r.POST("/thumbnail", Thumbnail)
 
