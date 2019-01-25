@@ -32,14 +32,15 @@ func APIUpload(c *gin.Context) {
 	}
 
 	width, height, quality := getThumbParams(c)
-	t, err := imageupload.Thumbnail(img, width, height, quality)
+	thumbnailImage, err := imageupload.Thumbnail(img, width, height, quality)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	pu := generateFilePath(img.Sha256, img.Format)
+	pu := generateImagePathUrl(img.Sha256, img.Format)
 
+	// save origin image
 	fp := path.Join(DataDir, pu.OriginPath)
 	err = saveImage(fp, img)
 	if err != nil {
@@ -47,16 +48,22 @@ func APIUpload(c *gin.Context) {
 		return
 	}
 
+	// save thumbnail image
 	fp = path.Join(DataDir, pu.ThumbPath)
-	err = saveImage(fp, t)
+	err = saveImage(fp, thumbnailImage)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	// cache and return
-	res := UploadResponse{img, t, &pu}
-	CacheSet(img.Sha256, &res)
+	// save redis cache
+	res := UploadResponse{img, thumbnailImage, &pu}
+	err = CacheSet(img.Sha256, &res)
+	if err != nil {
+		log.Println(err)
+	}
+
+	// response
 	c.JSON(http.StatusOK, res)
 }
 

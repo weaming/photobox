@@ -12,14 +12,14 @@ type LocalStorage struct {
 	Img *imageupload.Image
 }
 
-func (l *LocalStorage) Save(fp string) error {
+func (s *LocalStorage) Save(fp string) error {
 	err := libfs.CreateDirIfNotExist(path.Dir(fp), false)
 	if err != nil {
 		return err
 	}
 
-	return l.Img.Save(fp)
+	return s.Img.Save(fp)
 }
-func (l *LocalStorage) Read(fp string) ([]byte, error) {
+func (s *LocalStorage) Read(fp string) ([]byte, error) {
 	return ioutil.ReadFile(fp)
 }

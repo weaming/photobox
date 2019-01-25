@@ -9,6 +9,7 @@ import (
 	"image"
 	_ "image/gif"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"path"
@@ -57,7 +58,10 @@ func (i *Image) DataURI() string {
 func (i *Image) WriteResponse(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", i.ContentType)
 	w.Header().Set("Content-Length", strconv.Itoa(i.Size))
-	w.Write(i.Data)
+	_, err := w.Write(i.Data)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 // Create JPEG thumbnail from image.

@@ -8,7 +8,13 @@ import (
 	"github.com/go-redis/redis"
 )
 
-func NewCacher(hostPort map[string]string, db int) (*redis.Ring, *cache.Codec) {
+var codec *cache.Codec
+
+func initCodec() {
+	_, codec = NewRedisCache(map[string]string{"server0": redisHostPort}, redisDB)
+}
+
+func NewRedisCache(hostPort map[string]string, db int) (*redis.Ring, *cache.Codec) {
 	ring := redis.NewRing(&redis.RingOptions{
 		Addrs: hostPort,
 		DB:    db,
@@ -27,19 +33,12 @@ func NewCacher(hostPort map[string]string, db int) (*redis.Ring, *cache.Codec) {
 	return ring, codec
 }
 
-var codec *cache.Codec
-
-func initCodec() {
-	_, codec = NewCacher(map[string]string{"server0": redisHostPort}, redisDB)
-}
-
 func CacheSet(key string, obj interface{}) error {
-	codec.Set(&cache.Item{
+	return codec.Set(&cache.Item{
 		Key:        key,
 		Object:     obj,
 		Expiration: time.Hour * 24 * 365,
 	})
-	return nil
 }
 
 func CacheGet(key string, obj interface{}) error {

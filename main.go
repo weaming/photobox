@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"log"
 	"path"
 	"strings"
 
@@ -49,5 +50,5 @@ func main() {
 	r.POST("/upload", APIUpload)
 	r.POST("/thumbnail", APIThumbnail)
 
-	r.Run(listen)
+	log.Fatal(r.Run(listen))
 }
