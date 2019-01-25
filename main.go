@@ -46,8 +46,8 @@ func main() {
 		c.JSON(404, gin.H{"success": false, "message": "resource not found"})
 	})
 
-	r.POST("/upload", Upload)
-	r.POST("/thumbnail", Thumbnail)
+	r.POST("/upload", APIUpload)
+	r.POST("/thumbnail", APIThumbnail)
 
 	r.Run(listen)
 }

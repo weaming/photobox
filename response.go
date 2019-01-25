@@ -14,7 +14,7 @@ import (
 type UploadResponse struct {
 	Image *imageupload.Image `json:"image"`
 	Thumb *imageupload.Image `json:"thumb"`
-	PU    *PathUrl           `json:"data"`
+	Data  *PathUrl           `json:"data"`
 }
 
 type PathUrl struct {

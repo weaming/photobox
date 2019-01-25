@@ -45,7 +45,6 @@ func (i *Image) Save(filename string) error {
 			i.Filename = path.Base(filename)
 		}
 	}
-
 	return err
 }
 
@@ -55,7 +54,7 @@ func (i *Image) DataURI() string {
 }
 
 // Write image to HTTP response.
-func (i *Image) Write(w http.ResponseWriter) {
+func (i *Image) WriteResponse(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", i.ContentType)
 	w.Header().Set("Content-Length", strconv.Itoa(i.Size))
 	w.Write(i.Data)
@@ -83,25 +82,21 @@ func okContentType(contentType string) bool {
 // Process uploaded file into an image.
 func Process(r *http.Request, field string) (*Image, error) {
 	file, info, err := r.FormFile(field)
-
 	if err != nil {
 		return nil, err
 	}
 
 	contentType := info.Header.Get("Content-Type")
-
 	if !okContentType(contentType) {
 		return nil, errors.New(fmt.Sprintf("Wrong content type: %s", contentType))
 	}
 
-	bs, err := ioutil.ReadAll(file)
-
+	data, err := ioutil.ReadAll(file)
 	if err != nil {
 		return nil, err
 	}
 
-	img, format, err := image.Decode(bytes.NewReader(bs))
-
+	img, format, err := image.Decode(bytes.NewReader(data))
 	if err != nil {
 		return nil, err
 	}
@@ -110,13 +105,12 @@ func Process(r *http.Request, field string) (*Image, error) {
 		Filename:    info.Filename,
 		ContentType: contentType,
 		Format:      format,
-		Data:        bs,
-		Size:        len(bs),
+		Data:        data,
+		Size:        len(data),
 		Width:       img.Bounds().Max.X,
 		Height:      img.Bounds().Max.Y,
-		Sha256:      Sha256(bs),
+		Sha256:      Sha256(data),
 	}
-
 	return i, nil
 }
 

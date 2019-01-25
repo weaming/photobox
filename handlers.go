@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/weaming/photobox/storage"
 	"log"
 	"net/http"
 	"path"
@@ -9,10 +10,10 @@ import (
 	"github.com/gin-gonic/gin"
 	libfs "github.com/weaming/golib/fs"
 	"github.com/weaming/photobox/imageupload"
-	"github.com/weaming/photobox/storage"
 )
 
-func Upload(c *gin.Context) {
+// APIUpload and generate thumbnail
+func APIUpload(c *gin.Context) {
 	img, err := imageupload.Process(c.Request, "file")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -59,12 +60,7 @@ func Upload(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
-func saveImage(fp string, img *imageupload.Image) error {
-	local := storage.LocalStorage{Img: img}
-	return storage.SaveTo(&local, fp)
-}
-
-func Thumbnail(c *gin.Context) {
+func APIThumbnail(c *gin.Context) {
 	img, err := imageupload.Process(c.Request, "file")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -73,7 +69,12 @@ func Thumbnail(c *gin.Context) {
 
 	width, height, quality := getThumbParams(c)
 	t, err := imageupload.Thumbnail(img, width, height, quality)
-	t.Write(c.Writer)
+	t.WriteResponse(c.Writer)
+}
+
+func saveImage(fp string, img *imageupload.Image) error {
+	local := storage.LocalStorage{Img: img}
+	return storage.SaveTo(&local, fp)
 }
 
 func getThumbParams(c *gin.Context) (int, int, int) {
