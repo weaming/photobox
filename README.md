@@ -24,3 +24,8 @@ Photo Box
         height    int    "max thumbnail width"
         quality   int    "thumbnail quality"
 ```
+
+## [Setup S3 storage](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials)
+
+* export `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION`
+* export `PHOTOBOX_BUCKET`, default `photobox-develop`

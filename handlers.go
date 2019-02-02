@@ -42,16 +42,14 @@ func APIUpload(c *gin.Context) {
 	pu := generateImagePathUrl(img.Md5, img.Format)
 
 	// save origin image
-	fp := path.Join(DataDir, pu.OriginPath)
-	err = saveImage(fp, img)
+	err = saveImage(DataDir, pu.OriginPath, img)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	// save thumbnail image
-	fp = path.Join(DataDir, pu.ThumbPath)
-	err = saveImage(fp, thumbnailImage)
+	err = saveImage(DataDir, pu.OriginPath, thumbnailImage)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -80,8 +78,16 @@ func APIThumbnail(c *gin.Context) {
 	t.WriteResponse(c.Writer)
 }
 
-func saveImage(fp string, img *imageupload.Image) error {
+func saveImage(dir, keyPath string, img *imageupload.Image) error {
+	fp := path.Join(dir, keyPath)
 	local := storage.LocalStorage{Img: img}
+	go func() {
+		s3 := storage.S3Storage{Img: img}
+		err := storage.SaveTo(&s3, keyPath)
+		if err != nil {
+			log.Println(err)
+		}
+	}()
 	return storage.SaveTo(&local, fp)
 }
 
