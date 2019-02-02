@@ -21,7 +21,7 @@ const thumbTempName = "thumbnail.jpg"
 
 type Image struct {
 	Filename    string `json:"filename"`
-	ContentType string `json:"content-type"`
+	ContentType string `json:"content_type"`
 	Format      string `json:"format"`
 	Size        int    `json:"size"`
 	Width       int    `json:"width"`
