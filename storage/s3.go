@@ -3,12 +3,12 @@ package storage
 import (
 	"bytes"
 	"errors"
-	"io/ioutil"
 	"log"
 	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/weaming/photobox/imageupload"
 )
@@ -20,10 +20,7 @@ type S3Storage struct {
 func (s *S3Storage) Save(fp string) (err error) {
 	err = errors.New("not uploaded yet")
 	count := 3
-	bucket := os.Getenv("PHOTOBOX_BUCKET")
-	if bucket == "" {
-		bucket = "photobox-develop"
-	}
+	bucket := getBucketName()
 	for {
 		err = S3Upload(bucket, fp, s.Img.Data)
 		count -= 1
@@ -35,17 +32,27 @@ func (s *S3Storage) Save(fp string) (err error) {
 }
 
 func (s *S3Storage) Read(fp string) ([]byte, error) {
-	return ioutil.ReadFile(fp)
+	return S3Read(getBucketName(), fp)
 }
 
-func S3Upload(bucket, key string, data []byte) error {
+func getBucketName() string {
+	bucket := os.Getenv("PHOTOBOX_BUCKET")
+	if bucket == "" {
+		bucket = "photobox-develop"
+	}
+	return bucket
+}
+
+func newS3Session() *session.Session {
 	region := os.Getenv("AWS_DEFAULT_REGION")
 	if region == "" {
 		region = "us-east-2"
 	}
-	sess := session.Must(session.NewSession(&aws.Config{Region: aws.String(region)}))
-	uploader := s3manager.NewUploader(sess)
+	return session.Must(session.NewSession(&aws.Config{Region: aws.String(region)}))
+}
 
+func S3Upload(bucket, key string, data []byte) error {
+	uploader := s3manager.NewUploader(newS3Session())
 	buf := bytes.NewBuffer(data)
 	result, err := uploader.Upload(&s3manager.UploadInput{
 		Bucket: aws.String(bucket),
@@ -58,4 +65,15 @@ func S3Upload(bucket, key string, data []byte) error {
 		log.Printf("file uploaded to %s\n", aws.StringValue(&result.Location))
 	}
 	return err
+}
+
+func S3Read(bucket, key string) (data []byte, err error) {
+	downloader := s3manager.NewDownloader(newS3Session())
+	buf := aws.NewWriteAtBuffer(data)
+	_, err = downloader.Download(buf,
+		&s3.GetObjectInput{
+			Bucket: aws.String(bucket),
+			Key:    aws.String(key),
+		})
+	return buf.Bytes(), err
 }

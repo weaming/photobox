@@ -49,7 +49,7 @@ func APIUpload(c *gin.Context) {
 	}
 
 	// save thumbnail image
-	err = saveImage(DataDir, pu.OriginPath, thumbnailImage)
+	err = saveImage(DataDir, pu.ThumbPath, thumbnailImage)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
