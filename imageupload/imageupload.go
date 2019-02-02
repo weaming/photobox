@@ -2,6 +2,7 @@ package imageupload
 
 import (
 	"bytes"
+	"crypto/md5"
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
@@ -29,6 +30,7 @@ type Image struct {
 	Data        []byte `json:"-"`
 	Path        string `json:"file"`
 	Sha256      string `json:"sha256"`
+	Md5         string `json:"md5"`
 }
 
 // Save image to file.
@@ -113,7 +115,8 @@ func Process(r *http.Request, field string) (*Image, error) {
 		Size:        len(data),
 		Width:       img.Bounds().Max.X,
 		Height:      img.Bounds().Max.Y,
-		Sha256:      Sha256(data),
+		Sha256:      Sha256(bs),
+		Md5:         Md5(bs),
 	}
 	return i, nil
 }
@@ -123,6 +126,10 @@ func ExistFile(fp string) bool {
 		return true
 	}
 	return false
+}
+
+func Md5(content []byte) string {
+	return fmt.Sprintf("%x", md5.Sum256(content))
 }
 
 func Sha256(content []byte) string {
