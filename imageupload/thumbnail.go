@@ -33,6 +33,7 @@ func ThumbnailJPEG(i *Image, width int, height int, quality int) (*Image, error)
 		Width:       thumbnail.Bounds().Max.X,
 		Height:      thumbnail.Bounds().Max.Y,
 		Sha256:      Sha256(data),
+		Md5:         Md5(data),
 	}
 	return t, nil
 }
@@ -58,6 +59,7 @@ func ThumbnailPNG(i *Image, width int, height int) (*Image, error) {
 		Width:       thumbnail.Bounds().Max.X,
 		Height:      thumbnail.Bounds().Max.Y,
 		Sha256:      Sha256(data),
+		Md5:         Md5(data),
 	}
 	return t, nil
 }
