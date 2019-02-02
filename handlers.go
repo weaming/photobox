@@ -1,11 +1,12 @@
 package main
 
 import (
-	"github.com/weaming/photobox/storage"
 	"log"
 	"net/http"
 	"path"
 	"strconv"
+
+	"github.com/weaming/photobox/storage"
 
 	"github.com/gin-gonic/gin"
 	libfs "github.com/weaming/golib/fs"
@@ -22,10 +23,10 @@ func APIUpload(c *gin.Context) {
 
 	// check cache
 	cacheRes := UploadResponse{}
-	err = CacheGet(img.Sha256, &cacheRes)
+	err = CacheGet(img.Md5, &cacheRes)
 	if err == nil {
 		if libfs.Exist(cacheRes.Image.Path) && libfs.Exist(cacheRes.Thumb.Path) {
-			log.Printf("hit cache %v", img.Sha256)
+			log.Printf("hit cache %v", img.Md5)
 			c.JSON(http.StatusOK, cacheRes)
 			return
 		}
@@ -38,7 +39,7 @@ func APIUpload(c *gin.Context) {
 		return
 	}
 
-	pu := generateImagePathUrl(img.Sha256, img.Format)
+	pu := generateImagePathUrl(img.Md5, img.Format)
 
 	// save origin image
 	fp := path.Join(DataDir, pu.OriginPath)
@@ -58,7 +59,7 @@ func APIUpload(c *gin.Context) {
 
 	// save redis cache
 	res := UploadResponse{img, thumbnailImage, &pu}
-	err = CacheSet(img.Sha256, &res)
+	err = CacheSet(img.Md5, &res)
 	if err != nil {
 		log.Println(err)
 	}

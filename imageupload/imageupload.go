@@ -115,8 +115,8 @@ func Process(r *http.Request, field string) (*Image, error) {
 		Size:        len(data),
 		Width:       img.Bounds().Max.X,
 		Height:      img.Bounds().Max.Y,
-		Sha256:      Sha256(bs),
-		Md5:         Md5(bs),
+		Sha256:      Sha256(data),
+		Md5:         Md5(data),
 	}
 	return i, nil
 }
@@ -129,7 +129,7 @@ func ExistFile(fp string) bool {
 }
 
 func Md5(content []byte) string {
-	return fmt.Sprintf("%x", md5.Sum256(content))
+	return fmt.Sprintf("%x", md5.Sum(content))
 }
 
 func Sha256(content []byte) string {
