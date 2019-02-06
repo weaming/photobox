@@ -2,7 +2,9 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
+	"os"
 	"path"
 	"strings"
 
@@ -27,6 +29,11 @@ func init() {
 	flag.StringVar(&listen, "listen", listen, "bind [<host>]:<port>")
 	flag.StringVar(&redisHostPort, "redis", redisHostPort, "redis <host>:<port>")
 	flag.IntVar(&redisDB, "db", redisDB, "redis database")
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Please setup AWS_ACESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION, PHOTOBOX_BUCKET(default photobox-develop) to use S3 as L2 storage.\n\n")
+		flag.PrintDefaults()
+	}
 	flag.Parse()
 	if !strings.HasPrefix(ImageDomain, "http") {
 		ImageDomain = "http://" + ImageDomain
