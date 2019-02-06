@@ -30,7 +30,11 @@ func (r *LocalS3FS) Open(name string) (http.File, error) {
 		if err != nil {
 			return nil, err
 		}
-		return &S3File{data: data}, nil
+		return &S3File{
+			data:   data,
+			bucket: r.bucket,
+			key:    key,
+		}, nil
 	}
 	return NeuteredReaddirFile{f}, nil
 }
@@ -46,9 +50,19 @@ func NewLocalS3FS(root, keyPrefix string) *LocalS3FS {
 }
 
 type S3File struct {
+	bucket string
+	key    string
 	data   []byte
 	offset int64
+
 	http.File
+	// type File interface {
+	// 	io.Closer
+	// 	io.Reader
+	// 	io.Seeker
+	// 	Readdir(count int) ([]os.FileInfo, error)
+	// 	Stat() (os.FileInfo, error)
+	// }
 }
 
 func (r *S3File) Read(p []byte) (n int, err error) {
@@ -97,11 +111,15 @@ func (r *S3File) Stat() (os.FileInfo, error) {
 }
 
 func (r *S3File) IsDir() bool        { return false }
-func (r *S3File) Name() string       { return "" }
+func (r *S3File) Name() string       { return path.Base(r.key) }
 func (r *S3File) Size() int64        { return int64(len(r.data)) }
 func (r *S3File) Mode() os.FileMode  { return os.ModePerm }
 func (r *S3File) ModTime() time.Time { return time.Now() }
 func (r *S3File) Sys() interface{}   { return nil }
+
+func (r *S3File) Close() error {
+	return nil
+}
 
 type NeuteredReaddirFile struct {
 	http.File
