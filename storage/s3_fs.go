@@ -41,6 +41,7 @@ func (r *LocalS3FS) Open(name string) (http.File, error) {
 		log.Printf("reading s3 key: %v\n", key)
 		data, err := S3Read(r.bucket, key)
 		if err != nil {
+			log.Println(err)
 			return nil, err
 		}
 
@@ -49,6 +50,7 @@ func (r *LocalS3FS) Open(name string) (http.File, error) {
 		PrepareDir(filePath, false)
 		err = ioutil.WriteFile(filePath, data, 0644)
 		if err != nil {
+			log.Println(err)
 			return nil, err
 		}
 		log.Printf("wrote local file from S3: %v\n", filePath)
