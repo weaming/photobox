@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/weaming/photobox/storage"
 )
 
 var (
@@ -36,8 +37,8 @@ func init() {
 
 func main() {
 	r := gin.Default()
-	r.Static("/origin", path.Join(DataDir, "origin"))
-	r.Static("/thumb", path.Join(DataDir, "thumb"))
+	r.StaticFS("/origin", storage.NewLocalS3FS(path.Join(DataDir, "origin"), "/origin"))
+	r.StaticFS("/thumb", storage.NewLocalS3FS(path.Join(DataDir, "thumb"), "/thumb"))
 
 	r.GET("/", func(c *gin.Context) {
 		c.File("index.html")

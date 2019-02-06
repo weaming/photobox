@@ -20,7 +20,7 @@ type S3Storage struct {
 func (s *S3Storage) Save(fp string) (err error) {
 	err = errors.New("not uploaded yet")
 	count := 3
-	bucket := getBucketName()
+	bucket := GetBucketName()
 	for {
 		err = S3Upload(bucket, fp, s.Img.Data)
 		count -= 1
@@ -32,10 +32,10 @@ func (s *S3Storage) Save(fp string) (err error) {
 }
 
 func (s *S3Storage) Read(fp string) ([]byte, error) {
-	return S3Read(getBucketName(), fp)
+	return S3Read(GetBucketName(), fp)
 }
 
-func getBucketName() string {
+func GetBucketName() string {
 	bucket := os.Getenv("PHOTOBOX_BUCKET")
 	if bucket == "" {
 		bucket = "photobox-develop"
@@ -43,7 +43,7 @@ func getBucketName() string {
 	return bucket
 }
 
-func newS3Session() *session.Session {
+func NewS3Session() *session.Session {
 	region := os.Getenv("AWS_DEFAULT_REGION")
 	if region == "" {
 		region = "us-east-2"
@@ -52,7 +52,7 @@ func newS3Session() *session.Session {
 }
 
 func S3Upload(bucket, key string, data []byte) error {
-	uploader := s3manager.NewUploader(newS3Session())
+	uploader := s3manager.NewUploader(NewS3Session())
 	buf := bytes.NewBuffer(data)
 	result, err := uploader.Upload(&s3manager.UploadInput{
 		Bucket: aws.String(bucket),
@@ -68,7 +68,7 @@ func S3Upload(bucket, key string, data []byte) error {
 }
 
 func S3Read(bucket, key string) (data []byte, err error) {
-	downloader := s3manager.NewDownloader(newS3Session())
+	downloader := s3manager.NewDownloader(NewS3Session())
 	buf := aws.NewWriteAtBuffer(data)
 	_, err = downloader.Download(buf,
 		&s3.GetObjectInput{
