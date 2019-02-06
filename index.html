@@ -1,43 +1,56 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
         body {
-            zoom: 2;
+            text-align: center;
+            height: 100vh;
+            width: 100vw;
+            margin: 0;
+            background: linear-gradient(to bottom right, #352482, #EA8F78);
+        }
+        #form {
+          zoom: 1.4;
         }
     </style>
 </head>
 
 <body>
-<form method="POST" action="/upload" enctype="multipart/form-data" accept="image/*">
-    <input type="file" name="file" id="input-file">
-    <input type="submit">
-</form>
-<img src="" id="image-preview" width="100vw"/>
+    <form method="POST" action="/upload" enctype="multipart/form-data" accept="image/*" id="form">
+        <input type="file" name="file" id="input-file">
+        <input type="submit">
+    </form>
+    <br/>
+    <img src="" id="image-preview" width="100vw" />
 
-<script src="https://code.jquery.com/jquery-1.12.4.min.js"
-        integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
         crossorigin="anonymous"></script>
-<script type="text/javascript">
-    function readURL(input) {
-        let file = input.files && input.files[0];
-        if (file) {
-            let reader = new FileReader();
-            reader.onload = e => {
-                $('#image-preview').attr('src', e.target.result)
-                    .css('min-width', '800px')
-                    .css('max-height', '100vh')
-                    .css('max-width', '100vw')
-            };
-            reader.readAsDataURL(file);
+    <script type="text/javascript">
+        function readURL(input)
+        {
+            let file = input.files && input.files[0];
+            if (file)
+            {
+                let reader = new FileReader();
+                reader.onload = e =>
+                {
+                    $('#image-preview').attr('src', e.target.result)
+                        .css('min-width', '600px')
+                        .css('max-height', '100vh')
+                        .css('max-width', '100vw')
+                };
+                reader.readAsDataURL(file);
+            }
         }
-    }
 
-    $("#input-file").change(function () {
-        readURL(this);
-    });
-</script>
+        $("#input-file").change(function()
+        {
+            readURL(this);
+        });
+    </script>
 </body>
+
 </html>
