@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/gin-gonic/gin"
 )
 
@@ -37,11 +39,20 @@ func (r *LocalS3FS) Open(name string) (http.File, error) {
 
 	// file not found on disk, try get from S3
 	if err != nil {
+		notFoundErr := err
 		key := path.Join("/", r.keyPrefix, name)
 		log.Printf("reading s3 key: %v\n", key)
 		data, err := S3Read(r.bucket, key)
 		if err != nil {
 			log.Println(err)
+			// http://docs.aws.amazon.com/AmazonS3/latest/API/ErrorResponses.html
+			if aerr, ok := err.(awserr.Error); ok {
+				switch aerr.Code() {
+				case s3.ErrCodeNoSuchKey:
+					// err = errors.New(fmt.Sprintf("object with key %s does not exist in bucket %s", key, r.bucket))
+					return nil, notFoundErr
+				}
+			}
 			return nil, err
 		}
 
