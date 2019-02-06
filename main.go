@@ -37,8 +37,8 @@ func init() {
 
 func main() {
 	r := gin.Default()
-	r.StaticFS("/origin", storage.NewLocalS3FS(path.Join(DataDir, "origin"), "/origin"))
-	r.StaticFS("/thumb", storage.NewLocalS3FS(path.Join(DataDir, "thumb"), "/thumb"))
+	r.StaticFS("/origin", storage.NewLocalS3FS(path.Join(DataDir, "origin"), "origin"))
+	r.StaticFS("/thumb", storage.NewLocalS3FS(path.Join(DataDir, "thumb"), "thumb"))
 
 	r.GET("/", func(c *gin.Context) {
 		c.File("index.html")

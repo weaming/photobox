@@ -3,10 +3,12 @@ package storage
 import (
 	"errors"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -14,8 +16,19 @@ import (
 
 type LocalS3FS struct {
 	fs        http.FileSystem
+	localRoot string
 	bucket    string
 	keyPrefix string
+}
+
+func PrepareDir(filePath string, force bool) {
+	if !strings.HasSuffix(filePath, "/") || force {
+		filePath = path.Dir(filePath)
+	}
+	err := os.MkdirAll(filePath, os.FileMode(0755))
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (r *LocalS3FS) Open(name string) (http.File, error) {
@@ -24,12 +37,22 @@ func (r *LocalS3FS) Open(name string) (http.File, error) {
 
 	// file not found on disk, try get from S3
 	if err != nil {
-		key := path.Join(r.keyPrefix, name)
+		key := path.Join("/", r.keyPrefix, name)
 		log.Printf("reading s3 key: %v\n", key)
 		data, err := S3Read(r.bucket, key)
 		if err != nil {
 			return nil, err
 		}
+
+		// save to local disk
+		filePath := path.Join(r.localRoot, name)
+		PrepareDir(filePath, false)
+		err = ioutil.WriteFile(filePath, data, 0644)
+		if err != nil {
+			return nil, err
+		}
+		log.Printf("wrote local file from S3: %v\n", filePath)
+
 		return &S3File{
 			data:   data,
 			bucket: r.bucket,
@@ -44,6 +67,7 @@ func NewLocalS3FS(root, keyPrefix string) *LocalS3FS {
 	fs := gin.Dir(root, false)
 	return &LocalS3FS{
 		fs:        fs,
+		localRoot: root,
 		bucket:    bucket,
 		keyPrefix: keyPrefix,
 	}
