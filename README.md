@@ -1,4 +1,4 @@
-Photo Box
+# Photo Box
 
 ![logo](camera-logo.png)
 
@@ -8,7 +8,9 @@ Photo Box
     - `/upload`
     - `/thumbnail`
 - Save origin image
-- Generate thumbnail image with size your desire
+  - local disk
+  - AWS S3
+- Generate thumbnail image with size you desire
 - JSON response format
 - Custom `index.html` homepage
 - Redis cached upload result based on photo hash
