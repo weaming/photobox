@@ -21,7 +21,7 @@
 <body>
     <form method="POST" action="/upload" enctype="multipart/form-data" accept="image/*" id="form">
         <input type="file" name="file" id="input-file">
-        <input type="submit">
+        <input type="submit" value="Submit">
     </form>
     <br/>
     <img src="" id="image-preview" width="100vw" />
@@ -29,14 +29,12 @@
     <script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
         crossorigin="anonymous"></script>
     <script type="text/javascript">
-        function readURL(input)
+        function readImage(input)
         {
             let file = input.files && input.files[0];
-            if (file)
-            {
+            if (file) {
                 let reader = new FileReader();
-                reader.onload = e =>
-                {
+                reader.onload = e => {
                     $('#image-preview').attr('src', e.target.result)
                         .css('min-width', '600px')
                         .css('max-height', '100vh')
@@ -46,9 +44,8 @@
             }
         }
 
-        $("#input-file").change(function()
-        {
-            readURL(this);
+        $("#input-file").change(function(){
+            readImage(this);
         });
     </script>
 </body>
